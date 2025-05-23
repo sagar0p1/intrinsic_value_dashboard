@@ -9,8 +9,8 @@ if uploaded_file:
     revenue, net_income, full_text = extract_financial_data(uploaded_file)
 
     st.subheader("🔍 Extracted Financial Data:")
-    st.write(f"**Revenue:** {revenue:,.0f} (assumed in absolute units)")
-    st.write(f"**Net Income:** {net_income:,.0f} (assumed in absolute units)")
+    st.write(f"**Revenue (in millions):** {revenue}")
+    st.write(f"**Net Income (in millions):** {net_income}")
 
     st.subheader("📁 Extracted PDF Text (for debugging):")
     with st.expander("Show Raw Text"):
@@ -27,4 +27,4 @@ if uploaded_file:
         future_cash_flow = net_income * ((1 + growth_rate) ** years)
         intrinsic_value = future_cash_flow / ((1 + discount_rate) ** years)
 
-        st.success(f"📈 Estimated Intrinsic Value (in same currency): {intrinsic_value:,.2f}")
+        st.success(f"📈 Estimated Intrinsic Value (in same currency, millions): {intrinsic_value:,.2f}")
