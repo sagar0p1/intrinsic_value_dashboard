@@ -9,15 +9,19 @@ def extract_financial_data(pdf_file):
         page = pdf_document.load_page(page_num)
         full_text += page.get_text()
     
-    # Regex patterns for Revenue and Net Income, case-insensitive and flexible
-    revenue_match = re.search(r"(Total\s)?Revenue[\s:]*\$?([\d,\.]+)(\s?million)?", full_text, re.IGNORECASE)
-    net_income_match = re.search(r"(Net\sIncome|Net\sProfit|Profit\sAfter\sTax)[\s:]*\$?([\d,\.]+)(\s?million)?", full_text, re.IGNORECASE)
+    revenue_match = re.search(r"(Total\s)?Revenue[\s:]*\$?([\d,\.]+)?(\s?million)?", full_text, re.IGNORECASE)
+    net_income_match = re.search(r"(Net\sIncome|Net\sProfit|Profit\sAfter\sTax)[\s:]*\$?([\d,\.]+)?(\s?million)?", full_text, re.IGNORECASE)
 
     def convert_to_number(amount_str, million_flag):
-        number = float(amount_str.replace(",", ""))
-        if million_flag:
-            number *= 1_000_000
-        return int(number)
+        if not amount_str or amount_str.strip() == "":
+            return 0
+        try:
+            number = float(amount_str.replace(",", ""))
+            if million_flag:
+                number *= 1_000_000
+            return int(number)
+        except ValueError:
+            return 0
 
     revenue = 0
     net_income = 0
