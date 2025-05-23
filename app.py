@@ -9,8 +9,8 @@ if uploaded_file:
     revenue, net_income, full_text = extract_financial_data(uploaded_file)
 
     st.subheader("🔍 Extracted Financial Data:")
-    st.write(f"**Revenue:** {revenue}")
-    st.write(f"**Net Income:** {net_income}")
+    st.write(f"**Revenue:** {revenue:,.0f} (assumed in absolute units)")
+    st.write(f"**Net Income:** {net_income:,.0f} (assumed in absolute units)")
 
     st.subheader("📁 Extracted PDF Text (for debugging):")
     with st.expander("Show Raw Text"):
