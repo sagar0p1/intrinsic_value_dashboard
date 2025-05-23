@@ -1,27 +1,12 @@
 import fitz  # PyMuPDF
-import re
 
-def extract_financial_data(pdf_file):
-    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
-    text = ""
+def extract_text_from_pdf(file):
+    doc = fitz.open(stream=file.read(), filetype="pdf")
+    full_text = ""
     for page in doc:
-        text += page.get_text()
+        full_text += page.get_text()
+    print("Extracted PDF Text:")
+    print(full_text)  # print raw text to check what is extracted
+    return full_text
 
-    # Define patterns for Revenue and Net Income (case insensitive, allow some spacing)
-    revenue_pattern = re.compile(r"Revenue\s*[:\-]?\s*\$?([\d,\.]+)", re.IGNORECASE)
-    net_income_pattern = re.compile(r"Net Income\s*[:\-]?\s*\$?([\d,\.]+)", re.IGNORECASE)
-
-    revenue_match = revenue_pattern.search(text)
-    net_income_match = net_income_pattern.search(text)
-
-    def parse_number(num_str):
-        # Remove commas and convert to float
-        try:
-            return float(num_str.replace(",", ""))
-        except:
-            return 0
-
-    revenue = parse_number(revenue_match.group(1)) if revenue_match else 0
-    net_income = parse_number(net_income_match.group(1)) if net_income_match else 0
-
-    return {"Revenue": revenue, "Net Income": net_income}
+# Then you can manually search in the output for revenue/net income
