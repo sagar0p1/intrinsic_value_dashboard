@@ -1,23 +1,20 @@
 import fitz  # PyMuPDF
 import re
 
-def extract_number(text):
-    try:
-        return float(text.replace(",", "").replace(" ", ""))
-    except (ValueError, AttributeError):
-        return 0
-
-def extract_financial_data(uploaded_file):
-    doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
+def extract_financial_data(file):
     text = ""
-    for page in doc:
-        text += page.get_text()
 
-    # Use regular expressions to extract financials
-    revenue_match = re.search(r"Revenue[s]?\s*[:\-]?\s*\$?\s*([\d,\.]+)", text, re.IGNORECASE)
-    net_income_match = re.search(r"Net Income\s*[:\-]?\s*\$?\s*([\d,\.]+)", text, re.IGNORECASE)
+    # Extract all text from PDF
+    with fitz.open(stream=file.read(), filetype="pdf") as doc:
+        for page in doc:
+            text += page.get_text()
 
-    revenue = extract_number(revenue_match.group(1)) if revenue_match else 0
-    net_income = extract_number(net_income_match.group(1)) if net_income_match else 0
+    # Try to extract revenue (placeholder pattern — not found in your sample yet)
+    revenue_pattern = re.search(r"Revenue.*?€\s*([\d,]+)", text, re.IGNORECASE)
+    revenue = float(revenue_pattern.group(1).replace(",", "")) * 1_000_000 if revenue_pattern else 0
+
+    # Extract Net Income / Profit for the year
+    net_income_pattern = re.search(r"Profit for the year\s*\(?[€\s]*([\d,]+)", text, re.IGNORECASE)
+    net_income = float(net_income_pattern.group(1).replace(",", "")) * 1_000_000 if net_income_pattern else 0
 
     return revenue, net_income, text
