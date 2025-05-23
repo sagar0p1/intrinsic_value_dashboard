@@ -1,21 +1,30 @@
 import streamlit as st
 from modules.extractor import extract_financial_data
 
-st.title("Intrinsic Value Calculator")
+st.title("📊 Intrinsic Value Estimator from Annual Report PDF")
 
-uploaded_file = st.file_uploader("Upload your Annual Report (PDF)", type=["pdf"])
+uploaded_file = st.file_uploader("Upload Annual Report PDF", type=["pdf"])
+
 if uploaded_file:
-    financial_data = extract_financial_data(uploaded_file)
+    revenue, net_income, full_text = extract_financial_data(uploaded_file)
 
-    st.write("Extracted Financial Data:")
-    st.write(f"Revenue: {financial_data['Revenue']}")
-    st.write(f"Net Income: {financial_data['Net Income']}")
+    st.subheader("🔍 Extracted Financial Data:")
+    st.write(f"**Revenue:** {revenue}")
+    st.write(f"**Net Income:** {net_income}")
 
-    expected_growth = st.number_input("Expected Growth Rate (decimal)", value=0.05, step=0.01)
-    discount_rate = st.number_input("Discount Rate (decimal)", value=0.10, step=0.01)
+    st.subheader("📁 Extracted PDF Text (for debugging):")
+    with st.expander("Show Raw Text"):
+        st.text(full_text)
 
-    if financial_data["Net Income"] > 0:
-        intrinsic_value = financial_data["Net Income"] * (1 + expected_growth) / (discount_rate - expected_growth)
-        st.write(f"Estimated Intrinsic Value: {intrinsic_value:.2f}")
+    if net_income == 0:
+        st.error("❌ Could not extract Net Income from the report or it is zero.")
     else:
-        st.write("Could not extract Net Income or it is zero.")
+        st.subheader("💸 Intrinsic Value Calculator")
+        growth_rate = st.number_input("Expected Growth Rate (as decimal)", value=0.05, step=0.01)
+        discount_rate = st.number_input("Discount Rate (as decimal)", value=0.10, step=0.01)
+        years = st.slider("Years of Projection", min_value=1, max_value=10, value=5)
+
+        future_cash_flow = net_income * ((1 + growth_rate) ** years)
+        intrinsic_value = future_cash_flow / ((1 + discount_rate) ** years)
+
+        st.success(f"📈 Estimated Intrinsic Value (in same currency): {intrinsic_value:,.2f}")
