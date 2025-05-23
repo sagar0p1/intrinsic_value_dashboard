@@ -1,29 +1,18 @@
-import streamlit as st
-from modules.extractor import extract_financial_data
+import fitz  # PyMuPDF
+import re
 
-st.title("Intrinsic Value Calculator")
+def extract_financial_data(uploaded_file):
+    doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
+    text = ""
+    for page in doc:
+        text += page.get_text()
 
-uploaded_file = st.file_uploader("Upload Annual Report (PDF)", type=["pdf"])
+    # Extract Revenue
+    revenue_match = re.search(r"Revenue[s]?\s*[:\-]?\s*\$?\s*([\d,\.]+)", text, re.IGNORECASE)
+    revenue = float(revenue_match.group(1).replace(",", "")) if revenue_match else 0
 
-if uploaded_file is not None:
-    revenue, net_income, full_text = extract_financial_data(uploaded_file)
+    # Extract Net Income
+    net_income_match = re.search(r"Net Income\s*[:\-]?\s*\$?\s*([\d,\.]+)", text, re.IGNORECASE)
+    net_income = float(net_income_match.group(1).replace(",", "")) if net_income_match else 0
 
-    st.subheader("Extracted Financial Data:")
-    st.write(f"Revenue: {revenue}")
-    st.write(f"Net Income: {net_income}")
-
-    st.subheader("Expected Growth Rate (as decimal, e.g. 0.05 for 5%)")
-    growth_rate = st.number_input("Enter expected growth rate", value=0.05, format="%.2f")
-
-    st.subheader("Discount Rate (as decimal, e.g. 0.10 for 10%)")
-    discount_rate = st.number_input("Enter discount rate", value=0.10, format="%.2f")
-
-    if net_income > 0:
-        intrinsic_value = net_income * (1 + growth_rate) / discount_rate
-        st.success(f"Estimated Intrinsic Value: {intrinsic_value:,.2f}")
-    else:
-        st.error("Could not extract Net Income from the report or it is zero.")
-
-    # Optional: Show raw text for debugging
-    st.subheader("Extracted PDF Text (for debugging)")
-    st.text_area("PDF Text", value=full_text, height=300)
+    return revenue, net_income, text
