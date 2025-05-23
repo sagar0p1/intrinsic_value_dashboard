@@ -2,7 +2,6 @@ import fitz  # PyMuPDF
 import re
 
 def extract_financial_data(pdf_file):
-    # Load PDF from uploaded file (BytesIO)
     pdf_document = fitz.open(stream=pdf_file.read(), filetype="pdf")
     
     full_text = ""
@@ -10,30 +9,31 @@ def extract_financial_data(pdf_file):
         page = pdf_document.load_page(page_num)
         full_text += page.get_text()
     
-    # Simple regex to find numbers after keywords - customize as needed
-    revenue = None
-    net_income = None
-    
-    revenue_match = re.search(r"Revenue[\s:]*\$?([\d,]+)", full_text, re.IGNORECASE)
-    if revenue_match:
-        revenue = revenue_match.group(1).replace(",", "")
-    
-    net_income_match = re.search(r"Net Income[\s:]*\$?([\d,]+)", full_text, re.IGNORECASE)
-    if net_income_match:
-        net_income = net_income_match.group(1).replace(",", "")
-    
-    # Convert to int if found
-    if revenue:
-        revenue = int(revenue)
-    else:
-        revenue = 0
-    
-    if net_income:
-        net_income = int(net_income)
-    else:
-        net_income = 0
+    # Regex patterns for Revenue and Net Income, case-insensitive and flexible
+    revenue_match = re.search(r"(Total\s)?Revenue[\s:]*\$?([\d,\.]+)(\s?million)?", full_text, re.IGNORECASE)
+    net_income_match = re.search(r"(Net\sIncome|Net\sProfit|Profit\sAfter\sTax)[\s:]*\$?([\d,\.]+)(\s?million)?", full_text, re.IGNORECASE)
 
+    def convert_to_number(amount_str, million_flag):
+        number = float(amount_str.replace(",", ""))
+        if million_flag:
+            number *= 1_000_000
+        return int(number)
+
+    revenue = 0
+    net_income = 0
+
+    if revenue_match:
+        amount_str = revenue_match.group(2)
+        million_flag = revenue_match.group(3) is not None
+        revenue = convert_to_number(amount_str, million_flag)
+        
+    if net_income_match:
+        amount_str = net_income_match.group(2)
+        million_flag = net_income_match.group(3) is not None
+        net_income = convert_to_number(amount_str, million_flag)
+    
     return {
+        "full_text": full_text,
         "Revenue": revenue,
         "Net Income": net_income
     }
