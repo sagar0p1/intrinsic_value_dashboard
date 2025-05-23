@@ -11,3 +11,4 @@ if uploaded_file:
     st.write("Processing file:", uploaded_file.name)
     financial_data = extract_financial_data(uploaded_file)
     st.write("Financial Data Extracted:", financial_data)
+from modules.extractor import extract_financial_data
